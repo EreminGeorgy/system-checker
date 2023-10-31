@@ -1,10 +1,32 @@
 import Bowser from "bowser";
 
+interface DeviceData {
+  os: string
+  vendorWebGL: string
+  battery: {
+    level: number | "unsupported"
+    chargingTime: number | "unsupported"
+    charging: boolean | "unsupported"
+    dischargingTime: number | "unsupported"
+  };
+  platform: string
+  maxTouchPoints: string
+  devicePixelRatio: number
+  cameras: string[];
+  rendererWebGLUnmasked: string
+  browser: string
+  rendererWebGL: string
+  vendorWebGLUnmasked: string
+  openGLVersion: string
+  gyroscopeData: string
+  numberOfCams: number
+}
+
 export function dump(element: HTMLButtonElement) {
 
   const browser = Bowser.getParser(window.navigator.userAgent);
 
-  const data = {
+  const data: DeviceData = {
     browser: browser.getBrowserName() + ' ' + browser.getBrowserVersion(),
     os: browser.getOSName() + ' ' + browser.getOSVersion(),
     platform: browser.getPlatformType(),
@@ -104,11 +126,11 @@ export function dump(element: HTMLButtonElement) {
   if (!('DeviceOrientationEvent' in window)) {
     data.gyroscopeData = 'unsupported'
   } else {
-
+    // @ts-ignore
     if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-
+      // @ts-ignore
       DeviceOrientationEvent.requestPermission()
-        .then(permissionState => {
+        .then((permissionState: string) => {
           if (permissionState === 'granted') {
             data.gyroscopeData = 'permission granted'
           } else {
@@ -126,6 +148,7 @@ export function dump(element: HTMLButtonElement) {
 
   if ('AmbientLightSensor' in window) {
     try {
+      // @ts-ignore
       const sensor = new AmbientLightSensor();
       sensor.addEventListener('reading', () => {
         console.log('Current light level:', sensor.illuminance);
@@ -141,6 +164,7 @@ export function dump(element: HTMLButtonElement) {
   // Battery status
 
   if ('getBattery' in navigator) {
+    // @ts-ignore
     navigator.getBattery().then(battery => {
       const updateBatteryInfo = () => {
         data.battery.level = battery.level
