@@ -191,7 +191,7 @@ export function dump(element: HTMLButtonElement) {
   setData()
 
 
-  document.getElementById('dump').addEventListener('click', async function () {
+  document.getElementById('dump')?.addEventListener('click', async function () {
     if ('DeviceOrientationEvent' in window) {
       // @ts-ignore
       if (typeof DeviceOrientationEvent.requestPermission === 'function') {
