@@ -123,26 +123,26 @@ export function dump(element: HTMLButtonElement) {
 
   // Obtaining gyroscope data
 
-  if (!('DeviceOrientationEvent' in window)) {
-    data.gyroscopeData = 'unsupported'
-  } else {
-    // @ts-ignore
-    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-      // @ts-ignore
-      DeviceOrientationEvent.requestPermission()
-        .then((permissionState: string) => {
-          if (permissionState === 'granted') {
-            data.gyroscopeData = 'permission granted'
-          } else {
-            data.gyroscopeData = 'permission denied'
-          }
-          setData()
-        })
-        .catch(console.error);
-    } else {
-      data.gyroscopeData = 'unsupported'
-    }
-  }
+  // if (!('DeviceOrientationEvent' in window)) {
+  //   data.gyroscopeData = 'unsupported'
+  // } else {
+  //   // @ts-ignore
+  //   if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+  //     // @ts-ignore
+  //     DeviceOrientationEvent.requestPermission()
+  //       .then((permissionState: string) => {
+  //         if (permissionState === 'granted') {
+  //           data.gyroscopeData = 'permission granted'
+  //         } else {
+  //           data.gyroscopeData = 'permission denied'
+  //         }
+  //         setData()
+  //       })
+  //       .catch(console.error);
+  //   } else {
+  //     data.gyroscopeData = 'unsupported'
+  //   }
+  // }
 
   // Light sensor detection ????
 
@@ -189,4 +189,30 @@ export function dump(element: HTMLButtonElement) {
   }
 
   setData()
+
+
+  document.getElementById('dump').addEventListener('click', async function () {
+    if ('DeviceOrientationEvent' in window) {
+      // @ts-ignore
+      if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+        try {
+          // @ts-ignore
+          const permissionState = await DeviceOrientationEvent.requestPermission();
+          if (permissionState === 'granted') {
+            data.gyroscopeData = 'permission granted';
+          } else {
+            data.gyroscopeData = 'permission denied';
+          }
+        } catch (error) {
+          console.error(error);
+          data.gyroscopeData = 'error requesting permission';
+        }
+      } else {
+        data.gyroscopeData = 'unsupported';
+      }
+    } else {
+      data.gyroscopeData = 'unsupported';
+    }
+    setData()
+  });
 }
