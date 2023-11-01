@@ -77,7 +77,7 @@ export function dump(element: HTMLButtonElement) {
   }
 
   // Obtaining camera info
-  console.log(navigator?.mediaDevices?.enumerateDevices);
+  console.log(navigator, navigator?.mediaDevices, navigator?.mediaDevices?.enumerateDevices);
   if (navigator?.mediaDevices?.enumerateDevices) {
     navigator.mediaDevices
       .enumerateDevices()
