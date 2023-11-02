@@ -1,4 +1,6 @@
-export const render = (element: HTMLDivElement, data) => {
+import { DeviceData } from "./types";
+
+export const render = (element: HTMLDivElement, data: DeviceData) => {
   element.innerHTML =
     `
       <div class="card">
