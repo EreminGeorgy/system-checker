@@ -1,4 +1,5 @@
 import Bowser from "bowser";
+import { render } from "./render";
 
 interface DeviceData {
   os: string
@@ -22,7 +23,7 @@ interface DeviceData {
   numberOfCams: number
 }
 
-export function dump(element: HTMLButtonElement) {
+export function dump(element: HTMLDivElement) {
 
   const browser = Bowser.getParser(window.navigator.userAgent);
 
@@ -48,49 +49,30 @@ export function dump(element: HTMLButtonElement) {
     }
   }
 
-  const setData = () => {
-    element.innerHTML = `
-      <div>
-        <p><b>Browser:</b> ${data.browser}</p>
-        <p><b>OS:</b> ${data.os}</p>
-        <p><b>Platform:</b> ${data.platform}</p>
-        <p><b>Number of cameras:</b> ${data.numberOfCams}</p>
-        <p><b>Camera names:</b> ${data.cameras}</p>
-        <p><b>Max touch points:</b> ${data.maxTouchPoints}</p>
-        <p><b>Vendor webGL:</b> ${data.vendorWebGL}</p>
-        <p><b>Renderer webGL:</b> ${data.rendererWebGL}</p>
-        <p><b>UNMASKED_VENDOR_WEBGL:</b> ${data.vendorWebGLUnmasked}</p>
-        <p><b>UNMASKED_RENDERER_WEBGL:</b> ${data.rendererWebGLUnmasked}</p>
-        <p><b>Shading Language Version:</b> ${data.openGLVersion}</p>
-        <p><b>Gyroscope data:</b> ${data.gyroscopeData}</p>
-        <p><b>Device Pixel ratio:</b> ${data.devicePixelRatio}</p>
-        <p><b>Battery status:</b>
-          <ul>
-            <li>Battery level: ${data.battery.level === 'unsupported' ? data.battery.level : data.battery.level * 100 + '%'}</li>
-            <li>Battery charging: ${data.battery.charging === 'unsupported' ? data.battery.charging : data.battery.charging ? 'Yes' : 'No'} </li>
-            <li>Battery charging time: ${data.battery.chargingTime === 'unsupported' ? data.battery.chargingTime : data.battery.chargingTime + 'seconds'}</li>
-            <li>Battery discharging time: ${data.battery.dischargingTime === 'unsupported' ? data.battery.dischargingTime : data.battery.dischargingTime + 'seconds'}</li>
-          </ul>
-        </p>
-      </div>
-    `
-  }
-
   // Obtaining camera info
-  console.log(navigator, navigator?.mediaDevices, navigator?.mediaDevices?.enumerateDevices);
-  if (navigator?.mediaDevices?.enumerateDevices) {
-    navigator.mediaDevices
-      .enumerateDevices()
-      .then(devices => {
-        console.log(devices);
-        const cameraDevices = devices.filter(device => device.kind === 'videoinput')
-        data.numberOfCams = cameraDevices.length
-        cameraDevices.forEach(device => data.cameras.push(device.label))
-        setData()
+
+  if (navigator?.mediaDevices) {
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(() => {
+        if (navigator.mediaDevices.enumerateDevices) {
+          navigator.mediaDevices
+            .enumerateDevices()
+            .then(devices => {
+              const cameraDevices = devices.filter(device => device.kind === 'videoinput')
+              data.numberOfCams = cameraDevices.length
+              cameraDevices.forEach(device => data.cameras.push(device.label))
+              render(element, data)
+            })
+            .catch(error => {
+              console.error('Error accessing media devices.', error)
+            })
+        }
+        // Do something here if needed, since permissions have been granted
       })
       .catch(error => {
-        console.error('Error accessing media devices.', error)
-      })
+        console.error('Error accessing the camera', error);
+      });
   }
 
   // Obtaining max touch points
@@ -121,9 +103,6 @@ export function dump(element: HTMLButtonElement) {
   data.vendorWebGLUnmasked = gl.getParameter(debugInfo['UNMASKED_VENDOR_WEBGL'])
   data.rendererWebGLUnmasked = gl.getParameter(debugInfo['UNMASKED_RENDERER_WEBGL'])
   data.openGLVersion = gl.getParameter(gl.SHADING_LANGUAGE_VERSION)
-
-  // Obtaining gyroscope data
-
 
   // Light sensor detection ????
 
@@ -158,9 +137,7 @@ export function dump(element: HTMLButtonElement) {
 
       battery.addEventListener('chargingchange', updateBatteryInfo);
       battery.addEventListener('levelchange', updateBatteryInfo);
-      battery.addEventListener('chargingtimechange', updateBatteryInfo);
-      battery.addEventListener('dischargingtimechange', updateBatteryInfo);
-      setData()
+      render(element, data)
     });
   } else {
     data.battery.level = 'unsupported'
@@ -169,10 +146,9 @@ export function dump(element: HTMLButtonElement) {
     data.battery.dischargingTime = 'unsupported'
   }
 
-  setData()
+  render(element, data)
 
-
-  document.getElementById('dump')?.addEventListener('click', async function () {
+  document.querySelector('#permissions')?.addEventListener('click', async function () {
     // Obtaining gyroscope data
 
     if ('DeviceOrientationEvent' in window) {
@@ -196,6 +172,6 @@ export function dump(element: HTMLButtonElement) {
     } else {
       data.gyroscopeData = 'unsupported';
     }
-    setData()
+    render(element, data)
   });
 }
