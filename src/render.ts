@@ -33,6 +33,7 @@ export const render = (element: HTMLDivElement, data: DeviceData) => {
         <p><b>Shading Language Version:</b> ${data.openGLVersion}</p>
         <p><b>Gyroscope data:</b> ${data.gyroscopeData}</p>
         <p><b>Device Pixel ratio:</b> ${data.devicePixelRatio}</p>
+        <p><b>Torch status:</b> ${data.torch}</p>
         <p><b>Battery status:</b>
           <ul>
             <li>Battery level: ${data.battery.level}</li>
@@ -41,6 +42,9 @@ export const render = (element: HTMLDivElement, data: DeviceData) => {
             <li>Battery discharging time: ${data.battery.dischargingTime}</li>
           </ul>
         </p>
+        <p><b>Torch status:</b> ${data.torch}</p>
+        <p><b>Device memory:</b> ${data.deviceMemory}</p>
+        <p><b>Cores number:</b> ${data.coresNumber}</p>
         <p><b>Other devices:</b> 
           <ul>
             ${data.otherDevices.map(d => `<li>${d}</li>`).join('')}

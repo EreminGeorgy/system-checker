@@ -23,5 +23,8 @@ export interface DeviceData {
   numberOfCams: number
   numberOfMics: number
   numberOfSpeakers: number
+  torch: string
+  deviceMemory: number | string
+  coresNumber: number | string
   otherDevices: string[]
 }

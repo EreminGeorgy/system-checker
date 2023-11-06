@@ -11,7 +11,7 @@ export function dump(element: HTMLDivElement) {
   const data: DeviceData = {
     deviceName: '',
     browser: browser.getBrowserName() + ' ' + browser.getBrowserVersion(),
-    os: browser.getOSName() + ' ' + browser.getOSVersion(),
+    os: browser.getOSName() + ' ' + browser.getOSVersion() + ' ' + navigator.platform,
     platform: browser.getPlatformType(),
     numberOfCams: 0,
     numberOfMics: 0,
@@ -33,6 +33,9 @@ export function dump(element: HTMLDivElement) {
       chargingTime: '0' || 'unsupported',
       dischargingTime: '0' || 'unsupported',
     },
+    torch: '',
+    deviceMemory: navigator?.deviceMemory || 'unsupported',
+    coresNumber: navigator.hardwareConcurrency || 'unsupported',
     otherDevices: []
   }
 
@@ -73,11 +76,9 @@ export function dump(element: HTMLDivElement) {
 
   render(element, data)
 
-
   document.querySelector('#permissions')?.addEventListener('click', async function () {
 
     // Obtaining gyroscope data
-
 
     if ('DeviceOrientationEvent' in window) {
       // @ts-ignore
@@ -106,45 +107,60 @@ export function dump(element: HTMLDivElement) {
     if (navigator?.mediaDevices) {
 
       navigator.mediaDevices.getUserMedia({
-        video: true,
+        video: { facingMode: 'environment' },
         audio: true,
       })
-        .then(() => {
-          if (navigator.mediaDevices.enumerateDevices) {
-            navigator.mediaDevices
-              .enumerateDevices()
-              .then(devices => {
-                const cameraDevices = devices.filter(device => device.kind === 'videoinput')
-                data.numberOfCams = cameraDevices.length
-                cameraDevices.forEach(device => data.cameras.push(device.label))
+        .then(stream => {
+          // Grab the track that corresponds to the camera
+          const track = stream.getVideoTracks()[0];
 
-                const microphones = devices.filter(device => device.kind === 'audioinput').filter(device => device.deviceId !== 'default')
-                data.numberOfMics = microphones.length
-                microphones.forEach(device => data.microphones.push(device.label))
+          // Check if this track supports switching the flashlight on
+          const capabilities = track.getCapabilities && track.getCapabilities();
 
-                const speakers = devices.filter(device => device.kind === 'audiooutput').filter(device => device.deviceId !== 'default')
-                data.numberOfSpeakers = speakers.length
-                speakers.forEach(device => data.speakers.push(device.label))
-
-                const otherDevices = devices.filter(device =>
-                  device.kind !== 'audiooutput' &&
-                  device.kind !== 'audioinput' &&
-                  device.kind !== 'videoinput'
-                );
-
-                otherDevices.forEach(device => data.otherDevices.push(device.label))
-
-                render(element, data)
+          // @ts-ignore
+          if (capabilities && capabilities.torch) {
+            // Apply the torch constraint using type assertion to bypass TypeScript type checking
+            (track as any).applyConstraints({
+              advanced: [{ torch: true }]
+            })
+              .then(() => {
+                data.torch = 'Torch turned on!'
               })
+              // @ts-ignore
               .catch(error => {
-                console.error('Error accessing media devices.', error)
-              })
+                data.torch = `Error applying torch constraints: ${error}`
+              });
+          } else { data.torch = 'no torch enabled' }
 
-          }
+          // Now, enumerate devices
+          return navigator.mediaDevices.enumerateDevices();
+        })
+        .then(devices => {
+          const cameraDevices = devices.filter(device => device.kind === 'videoinput')
+          data.numberOfCams = cameraDevices.length
+          cameraDevices.forEach(device => data.cameras.push(device.label))
+
+          const microphones = devices.filter(device => device.kind === 'audioinput').filter(device => device.deviceId !== 'default')
+          data.numberOfMics = microphones.length
+          microphones.forEach(device => data.microphones.push(device.label))
+
+          const speakers = devices.filter(device => device.kind === 'audiooutput').filter(device => device.deviceId !== 'default')
+          data.numberOfSpeakers = speakers.length
+          speakers.forEach(device => data.speakers.push(device.label))
+
+          const otherDevices = devices.filter(device =>
+            device.kind !== 'audiooutput' &&
+            device.kind !== 'audioinput' &&
+            device.kind !== 'videoinput'
+          );
+
+          otherDevices.forEach(device => data.otherDevices.push(device.label))
+
+          render(element, data)
         })
         .catch(error => {
-          console.error('Error accessing the camera', error);
-        });
+          console.error('Error accessing media devices.', error)
+        })
     }
 
     // Battery status

@@ -5,7 +5,7 @@ async function sendData(e: MouseEvent, data: DeviceData) {
   await alert('Sending data')
 
   try {
-    const response = await fetch('https://script.google.com/macros/s/AKfycbz2-kw7kkBkuQ_gE_I33UzbS272tDCN4nkK0XtrhgelM2r_iVT_xzF1yaVtA4vJbgBm/exec', {
+    const response = await fetch('https://script.google.com/macros/s/AKfycbwdp212dEIlF2mIerupzzNxvVHWOwM_3pqX-pJgPsyNgXQudDHT8KTZJapJ9_e-xxr7/exec', {
       method: 'POST',
       mode: 'no-cors',
       headers: {
