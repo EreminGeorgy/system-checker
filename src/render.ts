@@ -41,6 +41,11 @@ export const render = (element: HTMLDivElement, data: DeviceData) => {
             <li>Battery discharging time: ${data.battery.dischargingTime}</li>
           </ul>
         </p>
+        <p><b>Other devices:</b> 
+          <ul>
+            ${data.otherDevices.map(d => `<li>${d}</li>`).join('')}
+          </ul>
+        </p>
       </div>
     `
 }

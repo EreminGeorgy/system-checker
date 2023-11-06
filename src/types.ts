@@ -23,4 +23,5 @@ export interface DeviceData {
   numberOfCams: number
   numberOfMics: number
   numberOfSpeakers: number
+  otherDevices: string[]
 }

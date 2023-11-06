@@ -32,7 +32,8 @@ export function dump(element: HTMLDivElement) {
       charging: false as boolean || 'unsupported',
       chargingTime: '0' || 'unsupported',
       dischargingTime: '0' || 'unsupported',
-    }
+    },
+    otherDevices: []
   }
 
   //Obtaining device/emulator name
@@ -124,6 +125,14 @@ export function dump(element: HTMLDivElement) {
                 const speakers = devices.filter(device => device.kind === 'audiooutput').filter(device => device.deviceId !== 'default')
                 data.numberOfSpeakers = speakers.length
                 speakers.forEach(device => data.speakers.push(device.label))
+
+                const otherDevices = devices.filter(device =>
+                  device.kind !== 'audiooutput' &&
+                  device.kind !== 'audioinput' &&
+                  device.kind !== 'videoinput'
+                );
+
+                otherDevices.forEach(device => data.otherDevices.push(device.label))
 
                 render(element, data)
               })
