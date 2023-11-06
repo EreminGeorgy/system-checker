@@ -2,17 +2,23 @@ import Bowser from "bowser";
 import { render } from "./render";
 
 import { DeviceData } from "./types";
+import { sendData } from "./postData";
 
 export function dump(element: HTMLDivElement) {
 
   const browser = Bowser.getParser(window.navigator.userAgent);
 
   const data: DeviceData = {
+    deviceName: '',
     browser: browser.getBrowserName() + ' ' + browser.getBrowserVersion(),
     os: browser.getOSName() + ' ' + browser.getOSVersion(),
     platform: browser.getPlatformType(),
     numberOfCams: 0,
+    numberOfMics: 0,
+    numberOfSpeakers: 0,
     cameras: [],
+    microphones: [],
+    speakers: [],
     maxTouchPoints: '',
     vendorWebGL: '',
     rendererWebGL: '',
@@ -22,18 +28,27 @@ export function dump(element: HTMLDivElement) {
     gyroscopeData: '',
     devicePixelRatio: window.devicePixelRatio || 1,
     battery: {
-      level: 0 as number | 'unsupported',
-      charging: false as boolean | 'unsupported',
-      chargingTime: 0 as number | 'unsupported',
-      dischargingTime: 0 as number | 'unsupported',
+      level: '0%' || 'unsupported',
+      charging: false as boolean || 'unsupported',
+      chargingTime: '0' || 'unsupported',
+      dischargingTime: '0' || 'unsupported',
     }
   }
+
+  //Obtaining device/emulator name
+
+  document.querySelector<HTMLInputElement>('#name')?.addEventListener('change', function (event: Event) {
+    data.deviceName = (event.target as HTMLInputElement)?.value;
+  })
 
   // Obtaining camera info
 
   if (navigator?.mediaDevices) {
 
-    navigator.mediaDevices.getUserMedia({ video: true })
+    navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: true,
+    })
       .then(() => {
         if (navigator.mediaDevices.enumerateDevices) {
           navigator.mediaDevices
@@ -42,13 +57,22 @@ export function dump(element: HTMLDivElement) {
               const cameraDevices = devices.filter(device => device.kind === 'videoinput')
               data.numberOfCams = cameraDevices.length
               cameraDevices.forEach(device => data.cameras.push(device.label))
+
+              const microphones = devices.filter(device => device.kind === 'audioinput').filter(device => device.deviceId !== 'default')
+              data.numberOfMics = microphones.length
+              microphones.forEach(device => data.microphones.push(device.label))
+
+              const speakers = devices.filter(device => device.kind === 'audiooutput').filter(device => device.deviceId !== 'default')
+              data.numberOfSpeakers = speakers.length
+              speakers.forEach(device => data.speakers.push(device.label))
+
               render(element, data)
             })
             .catch(error => {
               console.error('Error accessing media devices.', error)
             })
+
         }
-        // Do something here if needed, since permissions have been granted
       })
       .catch(error => {
         console.error('Error accessing the camera', error);
@@ -84,22 +108,6 @@ export function dump(element: HTMLDivElement) {
   data.rendererWebGLUnmasked = gl.getParameter(debugInfo['UNMASKED_RENDERER_WEBGL'])
   data.openGLVersion = gl.getParameter(gl.SHADING_LANGUAGE_VERSION)
 
-  // Light sensor detection ????
-
-  if ('AmbientLightSensor' in window) {
-    try {
-      // @ts-ignore
-      const sensor = new AmbientLightSensor();
-      sensor.addEventListener('reading', () => {
-        console.log('Current light level:', sensor.illuminance);
-      });
-      sensor.start();
-    } catch (err) {
-      console.error('The Ambient Light Sensor is not supported:', err);
-    }
-  } else {
-    console.log('The Ambient Light Sensor is not supported by this browser.');
-  }
 
   // Battery status
 
@@ -107,10 +115,10 @@ export function dump(element: HTMLDivElement) {
     // @ts-ignore
     navigator.getBattery().then(battery => {
       const updateBatteryInfo = () => {
-        data.battery.level = battery.level
+        data.battery.level = `${battery.level * 100}%`
         data.battery.charging = battery.charging
-        data.battery.chargingTime = battery.chargingTime
-        data.battery.dischargingTime = battery.dischargingTime
+        data.battery.chargingTime = `${battery.chargingTime} seconds`
+        data.battery.dischargingTime = `${battery.dischargingTime} seconds`
       }
 
       updateBatteryInfo();
@@ -128,8 +136,9 @@ export function dump(element: HTMLDivElement) {
 
   render(element, data)
 
+  // Obtaining gyroscope data
+
   document.querySelector('#permissions')?.addEventListener('click', async function () {
-    // Obtaining gyroscope data
 
     if ('DeviceOrientationEvent' in window) {
       // @ts-ignore
@@ -153,5 +162,7 @@ export function dump(element: HTMLDivElement) {
       data.gyroscopeData = 'unsupported';
     }
     render(element, data)
-  });
+  })
+
+  document.querySelector<HTMLButtonElement>('button[type="submit"]')?.addEventListener('click', (e) => sendData(e, data))
 }

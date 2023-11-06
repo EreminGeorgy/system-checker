@@ -8,9 +8,21 @@ export const render = (element: HTMLDivElement, data: DeviceData) => {
         <p><b>OS:</b> ${data.os}</p>
         <p><b>Platform:</b> ${data.platform}</p>
         <p><b>Number of cameras:</b> ${data.numberOfCams}</p>
+        <p><b>Number of microphones:</b> ${data.numberOfMics}</p>
+        <p><b>Number of speakers:</b> ${data.numberOfSpeakers}</p>
         <p><b>Camera names:</b> 
           <ul>
             ${data.cameras.map(cam => `<li>${cam}</li>`).join('')}
+          </ul>
+        </p>
+        <p><b>Microphone names:</b> 
+          <ul>
+            ${data.microphones.map(mic => `<li>${mic}</li>`).join('')}
+          </ul>
+        </p>
+        <p><b>Speaker names:</b> 
+          <ul>
+            ${data.speakers.map(speaker => `<li>${speaker}</li>`).join('')}
           </ul>
         </p>
         <p><b>Max touch points:</b> ${data.maxTouchPoints}</p>
@@ -23,10 +35,10 @@ export const render = (element: HTMLDivElement, data: DeviceData) => {
         <p><b>Device Pixel ratio:</b> ${data.devicePixelRatio}</p>
         <p><b>Battery status:</b>
           <ul>
-            <li>Battery level: ${data.battery.level === 'unsupported' ? data.battery.level : data.battery.level * 100 + '%'}</li>
+            <li>Battery level: ${data.battery.level}</li>
             <li>Battery charging: ${data.battery.charging === 'unsupported' ? data.battery.charging : data.battery.charging ? 'Yes' : 'No'} </li>
-            <li>Battery charging time: ${data.battery.chargingTime === 'unsupported' ? data.battery.chargingTime : data.battery.chargingTime + 'seconds'}</li>
-            <li>Battery discharging time: ${data.battery.dischargingTime === 'unsupported' ? data.battery.dischargingTime : data.battery.dischargingTime + 'seconds'}</li>
+            <li>Battery charging time: ${data.battery.chargingTime}</li>
+            <li>Battery discharging time: ${data.battery.dischargingTime}</li>
           </ul>
         </p>
       </div>

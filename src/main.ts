@@ -4,8 +4,9 @@ import { dump } from './dump.ts'
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div>
     <form>
-      <input type="text">
+      <input id="name" type="text">
       <button id="permissions" type="button">GetPermissions</button>
+      <button type="submit">Submit data</button>
     </form>
     <div id="dump"></div>
   </div>
