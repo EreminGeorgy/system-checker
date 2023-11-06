@@ -41,44 +41,6 @@ export function dump(element: HTMLDivElement) {
     data.deviceName = (event.target as HTMLInputElement)?.value;
   })
 
-  // Obtaining camera info
-
-  if (navigator?.mediaDevices) {
-
-    navigator.mediaDevices.getUserMedia({
-      video: true,
-      audio: true,
-    })
-      .then(() => {
-        if (navigator.mediaDevices.enumerateDevices) {
-          navigator.mediaDevices
-            .enumerateDevices()
-            .then(devices => {
-              const cameraDevices = devices.filter(device => device.kind === 'videoinput')
-              data.numberOfCams = cameraDevices.length
-              cameraDevices.forEach(device => data.cameras.push(device.label))
-
-              const microphones = devices.filter(device => device.kind === 'audioinput').filter(device => device.deviceId !== 'default')
-              data.numberOfMics = microphones.length
-              microphones.forEach(device => data.microphones.push(device.label))
-
-              const speakers = devices.filter(device => device.kind === 'audiooutput').filter(device => device.deviceId !== 'default')
-              data.numberOfSpeakers = speakers.length
-              speakers.forEach(device => data.speakers.push(device.label))
-
-              render(element, data)
-            })
-            .catch(error => {
-              console.error('Error accessing media devices.', error)
-            })
-
-        }
-      })
-      .catch(error => {
-        console.error('Error accessing the camera', error);
-      });
-  }
-
   // Obtaining max touch points
 
   const maxTouchPoints = 'maxTouchPoints' in navigator ? navigator.maxTouchPoints : 'Not Supported'
@@ -108,37 +70,13 @@ export function dump(element: HTMLDivElement) {
   data.rendererWebGLUnmasked = gl.getParameter(debugInfo['UNMASKED_RENDERER_WEBGL'])
   data.openGLVersion = gl.getParameter(gl.SHADING_LANGUAGE_VERSION)
 
-
-  // Battery status
-
-  if ('getBattery' in navigator) {
-    // @ts-ignore
-    navigator.getBattery().then(battery => {
-      const updateBatteryInfo = () => {
-        data.battery.level = `${battery.level * 100}%`
-        data.battery.charging = battery.charging
-        data.battery.chargingTime = `${battery.chargingTime} seconds`
-        data.battery.dischargingTime = `${battery.dischargingTime} seconds`
-      }
-
-      updateBatteryInfo();
-
-      battery.addEventListener('chargingchange', updateBatteryInfo);
-      battery.addEventListener('levelchange', updateBatteryInfo);
-      render(element, data)
-    });
-  } else {
-    data.battery.level = 'unsupported'
-    data.battery.charging = 'unsupported'
-    data.battery.chargingTime = 'unsupported'
-    data.battery.dischargingTime = 'unsupported'
-  }
-
   render(element, data)
 
-  // Obtaining gyroscope data
 
   document.querySelector('#permissions')?.addEventListener('click', async function () {
+
+    // Obtaining gyroscope data
+
 
     if ('DeviceOrientationEvent' in window) {
       // @ts-ignore
@@ -161,6 +99,70 @@ export function dump(element: HTMLDivElement) {
     } else {
       data.gyroscopeData = 'unsupported';
     }
+
+    // Obtaining media info
+
+    if (navigator?.mediaDevices) {
+
+      navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      })
+        .then(() => {
+          if (navigator.mediaDevices.enumerateDevices) {
+            navigator.mediaDevices
+              .enumerateDevices()
+              .then(devices => {
+                const cameraDevices = devices.filter(device => device.kind === 'videoinput')
+                data.numberOfCams = cameraDevices.length
+                cameraDevices.forEach(device => data.cameras.push(device.label))
+
+                const microphones = devices.filter(device => device.kind === 'audioinput').filter(device => device.deviceId !== 'default')
+                data.numberOfMics = microphones.length
+                microphones.forEach(device => data.microphones.push(device.label))
+
+                const speakers = devices.filter(device => device.kind === 'audiooutput').filter(device => device.deviceId !== 'default')
+                data.numberOfSpeakers = speakers.length
+                speakers.forEach(device => data.speakers.push(device.label))
+
+                render(element, data)
+              })
+              .catch(error => {
+                console.error('Error accessing media devices.', error)
+              })
+
+          }
+        })
+        .catch(error => {
+          console.error('Error accessing the camera', error);
+        });
+    }
+
+    // Battery status
+
+    if ('getBattery' in navigator) {
+      // @ts-ignore
+      navigator.getBattery().then(battery => {
+        const updateBatteryInfo = () => {
+          data.battery.level = `${battery.level * 100}%`
+          data.battery.charging = battery.charging
+          data.battery.chargingTime = `${battery.chargingTime} seconds`
+          data.battery.dischargingTime = `${battery.dischargingTime} seconds`
+        }
+
+        updateBatteryInfo();
+
+        battery.addEventListener('chargingchange', updateBatteryInfo);
+        battery.addEventListener('levelchange', updateBatteryInfo);
+        render(element, data)
+      });
+    } else {
+      data.battery.level = 'unsupported'
+      data.battery.charging = 'unsupported'
+      data.battery.chargingTime = 'unsupported'
+      data.battery.dischargingTime = 'unsupported'
+    }
+
     render(element, data)
   })
 
