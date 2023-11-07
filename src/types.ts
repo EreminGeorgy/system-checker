@@ -1,5 +1,7 @@
 export interface DeviceData {
   deviceName: string
+  declaredPlatform: string
+  isEmulator: boolean
   os: string
   vendorWebGL: string
   battery: {

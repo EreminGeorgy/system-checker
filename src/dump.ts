@@ -10,6 +10,8 @@ export function dump(element: HTMLDivElement) {
 
   const data: DeviceData = {
     deviceName: '',
+    declaredPlatform: '',
+    isEmulator: false,
     browser: browser.getBrowserName() + ' ' + browser.getBrowserVersion(),
     os: browser.getOSName() + ' ' + browser.getOSVersion() + ' ' + navigator.platform,
     platform: browser.getPlatformType(),
@@ -34,16 +36,33 @@ export function dump(element: HTMLDivElement) {
       dischargingTime: '0' || 'unsupported',
     },
     torch: '',
+    // @ts-ignore
     deviceMemory: navigator?.deviceMemory || 'unsupported',
-    coresNumber: navigator.hardwareConcurrency || 'unsupported',
+    coresNumber: navigator?.hardwareConcurrency || 'unsupported',
+    // @ts-ignore
+    oscpu: navigator?.oscpu || 'unsupported',
     otherDevices: []
   }
 
-  //Obtaining device/emulator name
+  // Obtaining user input
 
   document.querySelector<HTMLInputElement>('#name')?.addEventListener('change', function (event: Event) {
-    data.deviceName = (event.target as HTMLInputElement)?.value;
+    data.deviceName = (event.target as HTMLInputElement)?.value
   })
+
+  const radioButtons = document.querySelectorAll<HTMLInputElement>('input[type="radio"]')
+  radioButtons.forEach(radioButton => {
+    radioButton.addEventListener('change', (event: Event) => {
+      const target = event.target as HTMLInputElement;
+      if (target.checked) {
+        data.declaredPlatform = target.value;
+      }
+    });
+  });
+
+  document.querySelector<HTMLInputElement>('#emulator')?.addEventListener('change', (event: Event) => {
+    data.isEmulator = (event.target as HTMLInputElement).checked
+  });
 
   // Obtaining max touch points
 

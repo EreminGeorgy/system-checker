@@ -53,6 +53,7 @@ button {
   cursor: pointer;
   transition: border-color 0.25s;
   color: black;
+  padding: 0.5em;
 }
 button:hover {
   border-color: #646cff;
@@ -64,11 +65,11 @@ button:focus-visible {
 
 form {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
 }
 
 input {
-  font-size: 1em;
+  font-size: 2em;
   font-weight: 500;
   font-family: inherit;
 }
