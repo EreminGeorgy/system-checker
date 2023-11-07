@@ -46,6 +46,7 @@
         <p><b>Torch status:</b> ${e.torch}</p>
         <p><b>Device memory:</b> ${e.deviceMemory}</p>
         <p><b>Cores number:</b> ${e.coresNumber}</p>
+        <p><b>oscpu:</b> ${e.oscpu}</p>
         <p><b>Other devices:</b> 
           <ul>
             ${e.otherDevices.map(t=>`<li>${t}</li>`).join("")}
